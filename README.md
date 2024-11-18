@@ -22,3 +22,31 @@ The following UPSIDES are observed:
 
 ### Proposed methodology
 
+
+
+
+Flow
+
+1. Save PDF to directory. Currently, files are downloaded from servicers and saved to MS OneDrive. A user manually downloads PDF files from servicers into a ‘downloads’ directory. If there are any emails this is easy to automate as well. This can be at any time, any day of the week.
+2. 
+3. Every night at 12am a program runs that temporarily locks the directory with the PDF files
+4. The program then opens a PDF, reads the data, and decides automatically which table(s) to create. 
+The program performs validation checks to be certain the data were collected and formatted as intended. If there is an error, a table will be saved stating such and an email or other means of notification can be sent stating there was an issue with the read. 
+Moves the original PDF to the proper directory of your choosing. If it threw an error then it goes to the ‘Error’ pile for manual entry :(
+Saves the table(s) as a CSV files in the assigned directory. 
+Moves to the next PDF until all are read.
+
+
+What to do with these tables? 
+These CSV files can be directly opened in excel individually.
+Best practice, automatically upload to a simple relational database () and view with Power BI (or whatever tool you use currently)
+
+
+Overhead
+A sever to securely save the files (you are doing this already presumably)
+On the same server as above you’ll save: python files (logic files) and a bash file (the automation file)
+MAINTENANCE: The python files need to be maintained when: PDF files from new vendors are added or there is a significant change in existing PDF formatting. 
+Database needs to be ‘cleaned’ at least twice a year. This is just a review of the database health to prevent any issues.
+Data visualization software…I’m thinking it’s really cheap - $5 a month per user. 
+if you don’t want to invest in the data visualization software then you can automate export from the database to excel files as needed, weekly or whatever. 
+
