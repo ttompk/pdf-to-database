@@ -1,3 +1,4 @@
 /pdf_files
 /output_files
-
+.ipynb_checkpoints/
+__pycache__/

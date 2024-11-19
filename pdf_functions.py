@@ -213,44 +213,47 @@ def format_date(date_string, current_date_format):
     return formatted_date_str
 
 
-def save_as_csv(df, file_base, table_name):
+def save_as_csv(table, df, file_base, table_name):
     # format dates to standard YYYY-MM-DD
-    formatted_date_str = format_date(table_1['invoice_date'][0], '%B %d, %Y') # November 11, 2015
-    
-    file_name = file_base + " " + table_name + '.csv'
+    formatted_date_str = format_date(table['invoice_date'][0], '%B %d, %Y') # November 11, 2015
+
+    # add timestamp to filename
+    file_name = "example_output_files/" + file_base + " " + table_name + datetime.now().strftime("%Y%m%d_%H%M%S") + '.csv'
     df.to_csv(file_name, index= False)
 
 
 
+def auto_read():
+    scanned_text = read_pdf('amazon_111215.pdf')
 
-scanned_text = read_pdf('amazon_111215.pdf')
+    # add the contents for each page into a list
+    contents = text_to_list(scanned_text)
 
-# add the contents for each page into a list
-contents = text_to_list(scanned_text)
+    # iterate over each page
+    by_line = []
+    for page in range(0, len(scanned_text.pages)):  # create a flat list of strings
+        by_line += contents[page].split('\n')       # remove the line breaks
 
-# iterate over each page
-by_line = []
-for page in range(0, len(scanned_text.pages)):  # create a flat list of strings
-    by_line += contents[page].split('\n')       # remove the line breaks
+    # create a dictionary of search terms
+    table_1_search, table_1_type = table_1_search_dict()
+    table_2_search, table_2_type = table_2_search_dict()
 
-# create a dictionary of search terms
-table_1_search, table_1_type = table_1_search_dict()
-table_2_search, table_2_type = table_2_search_dict()
+    # create 
+    table_1 = one_table(table_1_search, by_line)
+    table_2 = many_table(table_2_search, by_line)  
 
-# create 
-table_1 = one_table(table_1_search, by_line)
-table_2 = many_table(table_2_search, by_line)  
+    table_1_df = one_table_df(table_1)
+    table_2_df = many_table_df(table_2)  # verifies that the length of each value list is the same in a many table
 
-table_1_df = one_table_df(table_1)
-table_2_df = many_table_df(table_2)  # verifies that the length of each value list is the same in a many table
+    # add a column of invoice numbers for each table_2 entry
+    #table_2_df['invoice_number'] = table_1['invoice_number'][0]
+    table_2_df.insert(0, 'invoice_number', table_1['invoice_number'][0])
 
-# add a column of invoice numbers for each table_2 entry
-#table_2_df['invoice_number'] = table_1['invoice_number'][0]
-table_2_df.insert(0, 'invoice_number', table_1['invoice_number'][0])
+    # format dates to standard YYYY-MM-DD
+    formatted_date_str = format_date(table_1['invoice_date'][0], '%B %d, %Y')  # November 11, 2015
+    name_base = table_1['company_name'][0].replace('.', '_') + '_' + formatted_date_str
 
-# format dates to standard YYYY-MM-DD
-formatted_date_str = format_date(table_1['invoice_date'][0], '%B %d, %Y')  # November 11, 2015
-name_base = table_1['company_name'][0].replace('.', '_') + '_' + formatted_date_str
+    save_as_csv(table_1_df, name_base, 'overview')
+    save_as_csv(table_2_df, name_base, 'products')
 
-save_as_csv(table_1_df, name_base, 'overview')
-save_as_csv(table_2_df, name_base, 'products')
+    return "All OK."
