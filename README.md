@@ -1,4 +1,4 @@
-# pdf-to-database
+# PDF-to-Database
 
 ## The problem
 A company regularly receives invoices in PDF format. The PDF invoices are the main record by which the company is compensated by their various servicers. The number of servicers is known and limited. The invoices contain the dollar amount distributed to the company for a particular service, called an 'account' internally. Additional information pertaining to the account, the date, and the servicer's name, among other data, are also included.  
