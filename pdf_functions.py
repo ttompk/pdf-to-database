@@ -224,6 +224,10 @@ def save_as_csv(table, df, file_base, table_name):
 
 
 def auto_read():
+    '''
+    This funciton needs to compared to beta.py before running. 
+    '''
+    
     scanned_text = read_pdf('amazon_111215.pdf')
 
     # add the contents for each page into a list
@@ -257,3 +261,6 @@ def auto_read():
     save_as_csv(table_2_df, name_base, 'products')
 
     return "All OK."
+
+if __name__ == "__main__":
+    auto_read()
