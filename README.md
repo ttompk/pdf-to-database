@@ -22,10 +22,13 @@ The following UPSIDES are observed:
 
 ## Proposed methodology
 #### Overview
-1. Load PDF in directory -> 
-2. Lock directory -> 
-3. Read PDF, format data, save to database ->
-4. Repeat
+Manual
+1. Manually save PDFs to directory 
+Auto, nightly
+2. lock directory
+3. Read PDF, format data, save to database
+5. Read next file until empty
+6. Unlock directory
 
 ### Flow
 1. Manually save PDF to directory. Currently, files are downloaded from servicers and saved to MS OneDrive. A user manually downloads PDF files from servicers into a ‘downloads’ directory. If there are any emails this is easy to automate as well. This can be at any time, any day of the week.
