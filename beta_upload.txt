@@ -1,0 +1,27 @@
+Design for a GUI to add new PDF files to the search and allocation strategy.
+
+Layout
+
+1. Select the file you want to upload:
+[button for upload]
+
+
+2. Copy and paste the text you want to add to the database:
+[]
+
+
+3. Is this an overview or product table?
+[product]  [overview]
+
+
+3. What is the name of the column this value belongs to in the new table?
+[]
+
+- the list is limited to the columns as found in 
+
+4. Add additional text to the table?
+[Yes]  [No]
+
+- if yes, repeat two to four above 
+- if no, commit the 
+
