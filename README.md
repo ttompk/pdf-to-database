@@ -52,4 +52,4 @@ The program performs validation checks to be certain the data were collected and
 ### Maintenance
 - The python files need to be maintained when: PDF files from new vendors are added or there is a significant change in existing PDF formatting. 
 - Database needs to be ‘cleaned’ at least twice a year. This is just a review of the database health to prevent any issues.
-- Data visualization software...I’m thinking it’s really cheap - $5 a month per user? - ...needs to be set up to see the data and perform analysis. However, the free/nearly free version of power BI does not allow one to update data in the underlying database. If there are needs to update the database, a separate program would be needed. 
+- Data visualization software...I’m thinking it’s really cheap - $5 a month per user? - ...needs to be set up to see the data and perform analysis. However, the free/nearly free version of Power BI does not allow one to update data in the underlying database. One can forsee a need to update the database, e.g. when a invoice value is misread, a separate program would be needed. 
