@@ -49,7 +49,7 @@ The program performs validation checks to be certain the data were collected and
 - A sever to securely save the files (you are doing this already presumably). On the same server as above you’ll save: python files (logic files) and a bash file (the automation file).
 - A postgres database (free).
 
-### MAINTENANCE
+### Maintenance
 - The python files need to be maintained when: PDF files from new vendors are added or there is a significant change in existing PDF formatting. 
 - Database needs to be ‘cleaned’ at least twice a year. This is just a review of the database health to prevent any issues.
 - Data visualization software...I’m thinking it’s really cheap - $5 a month per user? - ...needs to be set up to see the data and perform analysis. However, the free/nearly free version of power BI does not allow one to update data in the underlying database. If there are needs to update the database, a separate program would be needed. 
