@@ -10,6 +10,7 @@ Min objectives:
 from pypdf import PdfReader
 import pandas as pd
 from datetime import datetime
+import os
 
 def read_pdf(file_name: str):
     ''' 
@@ -225,9 +226,12 @@ def save_as_csv(table, df, file_base, table_name):
 
 def auto_read():
     '''
-    This funciton needs to compared to beta.py before running. 
+    This funciton needs to be compared to beta.py before running. 
     '''
     
+    # File location
+    
+    # File name
     scanned_text = read_pdf('amazon_111215.pdf')
 
     # add the contents for each page into a list

@@ -23,9 +23,8 @@ The following UPSIDES are observed:
 ## Proposed methodology
 #### Overview
 Manual
-1. Manually save PDFs to directory 
-Auto, nightly
-2. lock directory
+1. Manually save PDFs to directory
+2. Auto, nightly lock directory
 3. Read PDF, format data, save to database
 5. Read next file until empty
 6. Unlock directory
@@ -33,7 +32,7 @@ Auto, nightly
 ### Flow
 1. Manually save PDF to directory. Currently, files are downloaded from servicers and saved to MS OneDrive. A user manually downloads PDF files from servicers into a ‘downloads’ directory. If there are any emails this is easy to automate as well. This can be at any time, any day of the week.
 
-2. Every night at 12am a bash program runs that temporarily locks the directory with the PDF files.
+2. Every night at 12am a python program runs that moves the files in the directory holding the PDF files to a working directory.
 3. A python program then opens a PDF, reads the data, and decides automatically which table(s) to create. 
 The program performs validation checks to be certain the data were collected and formatted as intended. If there is an error, a file will be saved stating such and an email or other means of notification can be sent stating there was an issue with the read.
 4. The original PDF is moved to the proper directory for storage. If it threw an error then it goes to the ‘Error’ pile for manual entry :(
