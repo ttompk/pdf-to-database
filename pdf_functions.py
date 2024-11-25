@@ -74,10 +74,10 @@ def table_2_search_dict():
 def find_string(line, search_str, position, del_chars):
     ''' 
     Search a string for matching text.
-    Arguments
-    line:   
-    search_str:   
-    position:   
+    Input
+        line:       
+        search_str:   
+        position:   
     del_chars:   
 
     Returns:   string. 
