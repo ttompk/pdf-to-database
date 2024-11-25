@@ -10,7 +10,7 @@ Min objectives:
 from pypdf import PdfReader
 import pandas as pd
 from datetime import datetime
-import os
+
 
 def read_pdf(file_name: str):
     ''' 
@@ -118,19 +118,22 @@ def clean_text(matching_string):
 
     return clean
 
-def one_table(search_dict, by_line):
+def one_table(search_dict: dict, by_line: list) -> dict:
     '''This funciton takes in a dictionary of search terms and a list of text strings.
     The function searches over the lists of text and compares to string values. Matching strings are added
     to a dictionary of results.
+
     Input: 
-        
-    Returns:   result_dict. dictionary
+        search_dict:   dictionary. 
+        by_line:       list. list of text strings from pdf file
+    Returns:   
+        result_dict:   dictionary
     '''
     
     # create dictionary to hold results
     result_dict = {}
     
-    # iterate over each line
+    # iterate over each line in the list of text strings
     for line in by_line:
     
         # iterate over dictionary of search terms for each table
@@ -161,7 +164,18 @@ def one_table(search_dict, by_line):
                             
     return result_dict
 
-def many_table(search_dict, by_line):
+def many_table(search_dict: dict, by_line: list) -> dict:
+    ''' 
+    Create a dictionary of matching text using the search parameters in the the 'search_dict'. Source of 
+    the text is from a scraped PDF file.
+
+    Input: 
+        search_dict:   dictionary. 
+        by_line:       list. list of text strings from pdf file
+    Returns:   
+        result_dict:   dictionary
+        
+    '''
     # create dictionary to hold results
     result_dict = {}
 
@@ -190,10 +204,11 @@ def many_table(search_dict, by_line):
         result_dict[search_key] = temp_list
     return result_dict        
 
+
 def many_table_df(result_dict):
     counter = -1
     check = True
-    for key, value in result_dict.items():
+    for _ , value in result_dict.items():
         if counter == -1:
             counter = len(value)
         elif counter != len(value):
@@ -205,16 +220,32 @@ def many_table_df(result_dict):
         return pd.DataFrame({"Error": ["Error, number of values in the collection do not align"],
             "Text": [str(result_dict)]})
 
-def one_table_df(result_dict):
+
+def one_table_df(result_dict: dict):
+    '''
+    Converts dictionary to pandas df.
+    '''
     return pd.DataFrame(result_dict)
 
+
 def format_date(date_string, current_date_format):
+    '''
+    formats data string to a datetime object. 
+    '''
     date_obj = datetime.strptime(date_string, current_date_format)
     formatted_date_str = (date_obj.strftime('%Y-%m-%d'))
     return formatted_date_str
 
 
 def save_as_csv(table, df, file_base, table_name):
+    '''
+    Converts pandas dataframe to a csv and saves to drive.
+    Input:
+        table:        dict. 
+        df:           dict. Holds the correspnding search results     
+        file_base:    str. Company name and date
+        table_name:   str. type of table 'overview' or 'products'
+    '''
     # format dates to standard YYYY-MM-DD
     formatted_date_str = format_date(table['invoice_date'][0], '%B %d, %Y') # November 11, 2015
 
@@ -223,52 +254,10 @@ def save_as_csv(table, df, file_base, table_name):
     df.to_csv(file_name, index= False)
 
 
-
-def auto_read():
+def buid_search_dict():
     '''
-    This funciton needs to be compared to beta.py before running. 
+    Build a serch dict from an excel search guide.
     '''
-    
-    # PDF drop directory location
-    source_dir = "pdf_drop_box"
-
-    # PDF copy directory location
-    target_dir = "pdf_examples"
-
-    # File name
-    scanned_text = read_pdf('amazon_111215.pdf')
-
-    # add the contents for each page into a list
-    contents = text_to_list(scanned_text)
-
-    # iterate over each page
-    by_line = []
-    for page in range(0, len(scanned_text.pages)):  # create a flat list of strings
-        by_line += contents[page].split('\n')       # remove the line breaks
-
-    # create a dictionary of search terms
-    table_1_search, table_1_type = table_1_search_dict()
-    table_2_search, table_2_type = table_2_search_dict()
-
-    # create 
-    table_1 = one_table(table_1_search, by_line)
-    table_2 = many_table(table_2_search, by_line)  
-
-    table_1_df = one_table_df(table_1)
-    table_2_df = many_table_df(table_2)  # verifies that the length of each value list is the same in a many table
-
-    # add a column of invoice numbers for each table_2 entry
-    #table_2_df['invoice_number'] = table_1['invoice_number'][0]
-    table_2_df.insert(0, 'invoice_number', table_1['invoice_number'][0])
-
-    # format dates to standard YYYY-MM-DD
-    formatted_date_str = format_date(table_1['invoice_date'][0], '%B %d, %Y')  # November 11, 2015
-    name_base = table_1['company_name'][0].replace('.', '_') + '_' + formatted_date_str
-
-    save_as_csv(table_1_df, name_base, 'overview')
-    save_as_csv(table_2_df, name_base, 'products')
-
-    return "All OK."
-
-if __name__ == "__main__":
-    auto_read()
+    # open excel search guide - a form
+    # open the given file name
+    pass
