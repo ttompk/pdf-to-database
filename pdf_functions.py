@@ -229,8 +229,12 @@ def auto_read():
     This funciton needs to be compared to beta.py before running. 
     '''
     
-    # File location
-    
+    # PDF drop directory location
+    source_dir = "pdf_drop_box"
+
+    # PDF copy directory location
+    target_dir = "pdf_examples"
+
     # File name
     scanned_text = read_pdf('amazon_111215.pdf')
 
