@@ -52,7 +52,7 @@ def table_1_search_dict():
     search_dict = {
         'invoice_date': ['Order Placed: ', 0, ''],
         'invoice_number': ['order number:', 0, ''],
-        'company_name': ['order number', -1, ''],
+        'invoice_company': ['order number', -1, ''],
         'invoice_total': ['Grand Total:$', 0, 'Total paid']
         }
     return search_dict, table_type
@@ -238,26 +238,24 @@ def format_date(date_string, current_date_format):
     return formatted_date_str
 
 
-def save_as_csv(table, df, file_base, table_name):
+def save_as_csv(df, dir, file_base, table_name):
     '''
     Converts pandas dataframe to a csv and saves to drive.
     Input:
-        table:        dict. 
-        df:           dict. Holds the correspnding search results     
+        df:           dict. Holds the correspnding search results  
+        dir:          str. name of directory where file is saved   
         file_base:    str. Company name and date
         table_name:   str. type of table 'overview' or 'products'
     '''
     # format dates to standard YYYY-MM-DD
     try:
-        formatted_date_str = format_date(table['invoice_date'][0], '%B %d, %Y') # November 11, 2015
-
         # add timestamp to filename
-        file_name = "example_output_files/" + file_base + " " + table_name + datetime.now().strftime("%Y%m%d_%H%M%S") + '.csv'
+        file_name = dir + "/" + file_base + " " + table_name + datetime.now().strftime("%Y%m%d_%H%M%S") + '.csv'
         df.to_csv(file_name, index= False)
-        return "OK", "CSV saved"
+        return "CSV", "OK. Saved: " + table_name + " " + file_base
     except:
-        # add msg to log
-        return "Error", "Error saving CSV"
+        # add msg to log if error
+        return "CSV", "Error saving CSV " + table_name + " " + file_base
 
 
 
