@@ -1,48 +1,41 @@
 import sys_pdf
 import pdf_functions as pdf
 import os
+import dotenv
+import openai
 
 # Move PDF files to working directory
-source_dir = "pdf_inbox"
-target_dir = "pdf_examples"
-sys_pdf.move_pdf_files(source_dir, target_dir)
+#source_dir = "pdf_inbox"
+#target_dir = "pdf_examples"
+#sys_pdf.move_pdf_files(source_dir, target_dir)
 
-file_counter = 0
 
-# for filename in target_dir
-for file_name in os.listdir(source_dir):
-    
-    scanned_text = pdf.read_pdf(file_name)
+######
+'''
+Using openai's model to extract the data from the table.
+'''
 
-    # add the contents for each page into a list
-    contents = pdf.text_to_list(scanned_text)
+# Load environment variables from the .env file
+dotenv.load_dotenv()
 
-    # iterate over each page
-    by_line = []
-    for page in range(0, len(scanned_text.pages)):  # create a flat list of strings
-        by_line += contents[page].split('\n')       # remove the line breaks
+# instantiate the openai class with key
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    # create a dictionary of search terms
-    table_1_search, table_1_type = pdf.table_1_search_dict()
-    table_2_search, table_2_type = pdf.table_2_search_dict()
+# File path to the PDF
+file_path = "working_dir/amazon_111215.pdf"
 
-    # create tables with pulled data
-    table_1 = pdf.one_table(table_1_search, by_line)
-    table_2 = pdf.many_table(table_2_search, by_line)  
+# Step 1: Extract text from the PDF
+pdf_text = pdf.extract_text_from_pdf(file_path)
 
-    # 
-    table_1_df = pdf.one_table_df(table_1)
-    table_2_df = pdf.many_table_df(table_2)  # verifies that the length of each value list is the same in a many table
+# Step 2: Extract specific invoice details using OpenAI ChatCompletion
+# 'response' is the unformated data
+response, invoice_data = pdf.overview_extract_invoice_data(pdf_text)
 
-    # add a column of invoice numbers for each table_2 entry
-    #table_2_df['invoice_number'] = table_1['invoice_number'][0]
-    table_2_df.insert(0, 'invoice_number', table_1['invoice_number'][0])
+# Step 3: Create a table with the extracted data
+invoice_table = pdf.create_invoice_table(invoice_data)
 
-    # format dates to standard YYYY-MM-DD
-    formatted_date_str = pdf.format_date(table_1['invoice_date'][0], '%B %d, %Y')  # November 11, 2015
-    name_base = table_1['company_name'][0].replace('.', '_') + '_' + formatted_date_str
+# Step 4: Save the table to a CSV file
+invoice_table.to_csv("example-output_files/invoice_table.csv", index=False)
 
-    pdf.save_as_csv(table_1, table_1_df, name_base, 'overview')
-    pdf.save_as_csv(table_1, table_2_df, name_base, 'products')
+print("Invoice data extracted and saved to 'invoice_table.csv'.")
 
-    file_counter += 1

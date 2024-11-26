@@ -10,6 +10,7 @@ Min objectives:
 from pypdf import PdfReader
 import pandas as pd
 from datetime import datetime
+import PyPDF2    # for openai method
 
 
 def read_pdf(file_name: str):
@@ -261,3 +262,56 @@ def buid_search_dict():
     # open excel search guide - a form
     # open the given file name
     pass
+
+
+
+
+
+
+#####
+'''
+Using openai's model to extract the values for the overview table
+'''
+
+
+
+def extract_text_from_pdf(file_path):
+    """Extracts text from a PDF file."""
+    text = ""
+    with open(file_path, 'rb') as file:
+        reader = PyPDF2.PdfReader(file)
+        for page in reader.pages:
+            text += page.extract_text()
+    return text
+
+def extract_invoice_data(client, text):
+    """Extracts specific invoice details using OpenAI ChatCompletion API."""
+    # Prompt for the model to identify relevant data
+    prompt = f"""
+    Extract the following details from the text:
+    - Invoice Date
+    - Invoice Number
+    - Invoice Company
+    - Invoice Total
+    Text: {text}
+    Provide the data in a JSON format with keys: invoice_date, invoice_number, invoice_company, invoice_total.
+    """
+    #client.completions.create()
+    response = client.chat.completions.create(
+        max_tokens = 2000,
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that extracts structured data from text."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    extracted_data = response.choices[0].message.content.strip("```json").replace("\n","")
+    return response, eval(extracted_data)  # Convert string to dictionary
+
+def create_invoice_table(data):
+    """Creates a table with the extracted data."""
+    df = pd.DataFrame([data])
+    #df.columns = ["Invoice Date", "Invoice Number", "Invoice Company", "Invoice Total"]
+    return df
+
+
