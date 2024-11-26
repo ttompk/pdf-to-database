@@ -248,11 +248,17 @@ def save_as_csv(table, df, file_base, table_name):
         table_name:   str. type of table 'overview' or 'products'
     '''
     # format dates to standard YYYY-MM-DD
-    formatted_date_str = format_date(table['invoice_date'][0], '%B %d, %Y') # November 11, 2015
+    try:
+        formatted_date_str = format_date(table['invoice_date'][0], '%B %d, %Y') # November 11, 2015
 
-    # add timestamp to filename
-    file_name = "example_output_files/" + file_base + " " + table_name + datetime.now().strftime("%Y%m%d_%H%M%S") + '.csv'
-    df.to_csv(file_name, index= False)
+        # add timestamp to filename
+        file_name = "example_output_files/" + file_base + " " + table_name + datetime.now().strftime("%Y%m%d_%H%M%S") + '.csv'
+        df.to_csv(file_name, index= False)
+        return "OK", "CSV saved"
+    except:
+        # add msg to log
+        return "Error", "Error saving CSV"
+
 
 
 def buid_search_dict():
