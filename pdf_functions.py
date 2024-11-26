@@ -385,7 +385,7 @@ class OpenaiExtraction:
                 {"role": "user", "content": prompt}
             ]
         )
-        extracted_data = response.choices[0].message.content.strip("```json").replace("\n","")
+        extracted_data = str(response.choices[0].message.content).strip("```json").replace("\n","")
         #self.extracted_tables.update({table_name, [extracted_data, response]})  # store results in a dictionary
         return response, eval(extracted_data)  # Convert string to dictionary
     
