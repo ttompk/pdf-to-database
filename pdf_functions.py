@@ -270,10 +270,8 @@ def buid_search_dict():
 
 #####
 '''
-Using openai's model to extract the values for the overview table
+Using openai's model to extract the values from the PDF to build the overview table.
 '''
-
-
 
 def extract_text_from_pdf(file_path):
     """Extracts text from a PDF file."""
@@ -284,7 +282,7 @@ def extract_text_from_pdf(file_path):
             text += page.extract_text()
     return text
 
-def extract_invoice_data(client, text):
+def overview_extract_invoice_data(client, text):
     """Extracts specific invoice details using OpenAI ChatCompletion API."""
     # Prompt for the model to identify relevant data
     prompt = f"""
@@ -314,4 +312,4 @@ def create_invoice_table(data):
     #df.columns = ["Invoice Date", "Invoice Number", "Invoice Company", "Invoice Total"]
     return df
 
-
+#####
