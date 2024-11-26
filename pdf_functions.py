@@ -8,9 +8,13 @@ Min objectives:
 '''
 
 from pypdf import PdfReader
-import pandas as pd
 from datetime import datetime
-import PyPDF2    # for openai method
+import PyPDF2  # for openai method
+import pandas as pd
+import os
+import openai
+from dotenv import load_dotenv
+import sys_pdf
 
 
 def read_pdf(file_name: str):
@@ -269,51 +273,135 @@ def buid_search_dict():
 
 
 
-
-
-
 #####
 '''
 Using openai's model to extract the values from the PDF to build the overview table.
 '''
 
-def extract_text_from_pdf(file_path):
-    """Extracts text from a PDF file."""
-    text = ""
-    with open(file_path, 'rb') as file:
-        reader = PyPDF2.PdfReader(file)
-        for page in reader.pages:
-            text += page.extract_text()
-    return text
 
-def overview_extract_invoice_data(client, text):
-    """Extracts specific invoice details using OpenAI ChatCompletion API."""
-    # Prompt for the model to identify relevant data
-    prompt = f"""
-    Extract the following details from the text:
-    - Invoice Date
-    - Invoice Number
-    - Invoice Company
-    - Invoice Total
-    Text: {text}
-    Provide the data in a JSON format with keys: invoice_date, invoice_number, invoice_company, invoice_total.
-    """
-    #client.completions.create()
-    response = client.chat.completions.create(
-        max_tokens = 2000,
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant that extracts structured data from text."},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    extracted_data = response.choices[0].message.content.strip("```json").replace("\n","")
-    return response, eval(extracted_data)  # Convert string to dictionary
+class OpenaiExtraction:
+    '''
+    Use openai api to extract data from a PDF file and format into a table.
+    '''
 
-def create_invoice_table(data):
-    """Creates a table with the extracted data."""
-    df = pd.DataFrame([data])
-    #df.columns = ["Invoice Date", "Invoice Number", "Invoice Company", "Invoice Total"]
-    return df
+    def __init__(self, working_dir, csv_dir):
+        self.working_dir = working_dir
+        self.csv_dir = csv_dir
+        self.company_name = ""
+        self.invoice_date = ""
+        self.raw_text = ""
+        self.table_dict = {}
+        self.extracted_dict = {}
+        self.file_counter = 0
+        
+        # init methods
+        load_dotenv()   # Load environment variables from the .env file
+        self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))    # instantiate openai
 
-#####
+
+    def run_extraction(self):
+        # for filename in working_dir
+        for file_name in os.listdir(self.working_dir):
+            
+            # Extract text from the PDF
+            self.extract_text_from_pdf(file_name)
+
+            # Build the prompts
+            self.build_prompts()
+            
+            for table_name, prompt in self.table_dict.items():
+                
+                # Extract specific invoice details using OpenAI ChatCompletion
+                response, extracted_data = self.extract_invoice_data(prompt)
+                
+                # log the number of tokens spent
+                sys_pdf.openai_token_log(table_name, response.usage.total_tokens)
+            
+                # Create a pandas dataframe with the extracted data
+                invoice_table = self.create_invoice_table(extracted_data)
+                self.extracted_dict.update({table_name:[response, extracted_data, invoice_table]})
+
+                # grab company name and invoice date from overview table
+                if table_name == 'overview':
+                    self.pull_name_date(invoice_table)
+
+                # save data as csv and log
+                routine,log_value = save_as_csv(invoice_table, self.csv_dir, self.name_base, table_name)
+                sys_pdf.sys_log_entry(routine, log_value)
+
+            # save the original pdf in the 'processed' directory
+            sys_pdf.move_file(self.working_dir, "processed", file_name)
+            
+            self.file_counter += 1
+
+ 
+    def extract_text_from_pdf(self, file_path):
+        """Extracts text from a PDF file."""
+        text = ""
+        with open(file_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            for page in reader.pages:
+                text += page.extract_text()
+        self.raw_text = text
+
+        
+    def build_prompts(self):
+        # Prompt for the model to identify relevant data for the OVERVIEW table
+        self.overview_prompt = f"""
+        Extract the following details from the text:
+        - Invoice Date
+        - Invoice Number
+        - Invoice Company
+        - Invoice Total
+        Text: {self.raw_text}
+        Provide the data in a JSON format with keys: invoice_date, invoice_number, invoice_company, invoice_total.
+        """
+
+        # Prompt for the model to identify relevant data for the PRODUCTS table
+        self.product_prompt = f"""
+        Extract the following details from the text:
+        - Invoice Number
+        - Product Name
+        - Product Seller
+        - Price of Product
+        Text: {self.raw_text}
+        There may be multiple products in the text. 
+        Provide the data in a JSON format with keys: invoice_number, product_name, product_seller, product_amount.
+        """
+
+        # store these prompts in a dictionary
+        self.table_dict = { 'overview': self.overview_prompt, 'product': self.product_prompt }
+
+    
+    def extract_invoice_data(self, prompt):
+        """Extracts specific invoice details using OpenAI ChatCompletion API."""
+        
+        #response = client.completions.create()   - this is the depreciated method
+        response = self.client.chat.completions.create(
+            max_tokens = 3000,
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that extracts structured data from text."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        extracted_data = response.choices[0].message.content.strip("```json").replace("\n","")
+        #self.extracted_tables.update({table_name, [extracted_data, response]})  # store results in a dictionary
+        return response, eval(extracted_data)  # Convert string to dictionary
+    
+    def create_invoice_table(self, data):
+        """Creates a table with the extracted data."""
+        if type(data) == list:
+            df = pd.DataFrame(data)
+        else:
+            df = pd.DataFrame([data])
+        #df.columns = ["Invoice Date", "Invoice Number", "Invoice Company", "Invoice Total"]
+        return df
+
+    def pull_name_date(self, overview_table):
+        '''Create file name for saving'''
+        # record company name
+        self.company_name = overview_table['invoice_company'][0].replace('.', '_')
+        # format dates to standard YYYY-MM-DD
+        formatted_date_str = format_date(overview_table['invoice_date'][0], '%B %d, %Y') # November 11, 2015
+        self.name_base = self.company_name + "_" + formatted_date_str

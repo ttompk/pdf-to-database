@@ -50,3 +50,10 @@ def to_working_dir(source_dir, target_dir):
         print(error_msg)
         return False
     
+def openai_token_log(table_name, n_tokens):
+    '''
+    Records the number of tokens spent on extraction for each file.
+    '''
+    print("openai: ", table_name, n_tokens)
+
+
