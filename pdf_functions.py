@@ -366,7 +366,7 @@ class OpenaiExtraction:
         - Price of Product
         Text: {self.raw_text}
         There may be multiple products in the text. 
-        Provide the data in a JSON format with keys: invoice_number, product_name, product_seller, product_amount.
+        Provide the data in a JSON format with keys: invoice_number, product_name, product_seller, product_amount. Invoice_number should be repeated for each product in the JSON output. 
         """
 
         # store these prompts in a dictionary

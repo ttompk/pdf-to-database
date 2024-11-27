@@ -1,0 +1,67 @@
+
+
+# How to connect a program running in a docker container to a database on the same host. These instructions are specific to linux ubuntu.
+
+
+Yes, it is possible to access a PostgreSQL database running on the host machine from a Docker container. Here's how you can achieve it on your Ubuntu host:
+
+Steps to Access the Host's PostgreSQL from Docker
+1. Ensure PostgreSQL is Running and Accessible on the Host
+
+Confirm that PostgreSQL is running on your host machine:
+sudo systemctl status postgresql
+Check the listening port in the PostgreSQL configuration file (default is 5432):
+sudo nano /etc/postgresql/<version>/main/postgresql.conf
+Ensure listen_addresses is set to '*' or 0.0.0.0 for external access:
+
+listen_addresses = '*'
+Edit the pg_hba.conf file to allow connections from the Docker container:
+sudo nano /etc/postgresql/<version>/main/pg_hba.conf
+Add a rule like:
+
+host    all             all             172.17.0.0/16          md5
+Replace 172.17.0.0/16 with your Docker network subnet, if different.
+Restart PostgreSQL:
+sudo systemctl restart postgresql
+2. Find the Host's IP Address
+
+Inside a Docker container, the host is accessible via the special IP address host.docker.internal. However, on Linux, you need to use the host's actual IP address or configure Docker to use host.docker.internal.
+
+To find your host's IP address:
+ip addr show
+Look for an IP under inet associated with your primary network interface (e.g., 192.168.x.x).
+3. Run the Docker Container with Networking Options
+
+Pass the host's IP or hostname as the database connection endpoint in your Python program's configuration.
+Alternatively, you can configure the Docker container to use the host network mode, which lets it communicate directly with services running on the host:
+
+docker run --network host -e DB_HOST=127.0.0.1 <your-image>
+However, note that this mode has implications for network isolation.
+
+4. Update the Python Application Configuration
+
+In your Python application, use the host's IP address (or host.docker.internal if configured) to connect to the PostgreSQL instance. For example:
+import psycopg2
+
+connection = psycopg2.connect(
+    dbname="your_db",
+    user="your_user",
+    password="your_password",
+    host="192.168.x.x",  # Host machine IP
+    port=5432            # Default PostgreSQL port
+)
+5. Test the Connection
+
+Verify that your Python application inside the Docker container can connect to the database. You can also use a lightweight tool like pg_isready to check:
+
+pg_isready -h <host-ip> -p 5432
+Troubleshooting
+Connection Refused:
+Check that PostgreSQL is configured to accept external connections (see listen_addresses and pg_hba.conf above).
+Ensure the Docker container can reach the host's IP.
+Firewall/Networking Issues:
+Ensure no firewall (e.g., ufw) is blocking port 5432.
+sudo ufw allow 5432/tcp
+Docker-Specific Issues:
+Verify the container's network configuration. Run docker network inspect bridge to confirm the network setup and subnet.
+By following these steps, you should be able to connect your Python application inside a Docker container to a PostgreSQL database running on your Ubuntu host machine.

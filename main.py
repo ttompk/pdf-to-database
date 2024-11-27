@@ -5,10 +5,12 @@ import dotenv
 import openai
 
 # Move PDF files to working directory
-#source_dir = "pdf_inbox"
-#target_dir = "pdf_examples"
-#sys_pdf.move_pdf_files(source_dir, target_dir)
+source_dir = "pdf_inbox"
+working_dir = "working_dir"
+csv_save_dir = "example_output_files"
 
+
+sys_pdf.move_pdf_files(source_dir, target_dir)
 
 ######
 '''
@@ -18,7 +20,7 @@ Using openai's model to extract the data from the table.
 # Load environment variables from the .env file
 dotenv.load_dotenv()
 
-# instantiate the openai class with key
+# instantiate the openai class, provide with key
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # File path to the PDF
